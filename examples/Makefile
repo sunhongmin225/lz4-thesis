@@ -41,7 +41,7 @@ include ../Makefile.inc
 default: all
 
 all: printVersion doubleBuffer dictionaryRandomAccess ringBuffer ringBufferHC \
-     lineCompress frameCompress fileCompress simpleBuffer
+     lineCompress frameCompress fileCompress simpleBuffer arcmsh
 
 $(LZ4DIR)/liblz4.a: $(LZ4DIR)/lz4.c $(LZ4DIR)/lz4hc.c $(LZ4DIR)/lz4frame.c $(LZ4DIR)/lz4.h $(LZ4DIR)/lz4hc.h $(LZ4DIR)/lz4frame.h $(LZ4DIR)/lz4frame_static.h
 	$(MAKE) -C $(LZ4DIR) liblz4.a
@@ -76,6 +76,9 @@ compressFunctions: compress_functions.c $(LZ4DIR)/liblz4.a
 simpleBuffer: simple_buffer.c $(LZ4DIR)/liblz4.a
 	$(CC) $(FLAGS) $^ -o $@$(EXT)
 
+arcmsh: arcmsh.cpp $(LZ4DIR)/liblz4.a
+	$(CC) $(CPPFLAGS) $^ -o $@$(EXT)
+
 $(LZ4) :
 	$(MAKE) -C ../programs lz4
 
@@ -84,6 +87,8 @@ test : all $(LZ4)
 	./printVersion$(EXT)
 	@echo "\n=== Simple compression example ==="
 	./simpleBuffer$(EXT)
+	@echo "\n=== Simple arcmsh example ==="
+	./arcmsh$(EXT)
 	@echo "\n=== Double-buffer ==="
 	./doubleBuffer$(EXT) $(TESTFILE)
 	@echo "\n=== Ring Buffer ==="
@@ -110,5 +115,5 @@ clean:
 	@rm -f core *.o *.dec *-0 *-9 *-8192 *.lz4s *.lz4 \
 	 printVersion$(EXT) doubleBuffer$(EXT) dictionaryRandomAccess$(EXT) \
 	 ringBuffer$(EXT) ringBufferHC$(EXT) lineCompress$(EXT) frameCompress$(EXT) \
-	 fileCompress$(EXT) compressFunctions$(EXT) simpleBuffer$(EXT)
+	 fileCompress$(EXT) compressFunctions$(EXT) simpleBuffer$(EXT) arcmsh$(EXT)
 	@echo Cleaning completed

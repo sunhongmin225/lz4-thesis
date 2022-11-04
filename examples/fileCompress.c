@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 
 #include <lz4file.h>
-
+#include <time.h>
 
 #define CHUNK_SIZE (16*1024)
 
@@ -156,6 +156,11 @@ int main(int argc, const char **argv) {
     char inpFilename[256] = { 0 };
     char lz4Filename[256] = { 0 };
     char decFilename[256] = { 0 };
+    
+    clock_t start_cpu, end_cpu;
+    struct timespec start_wall, end_wall;
+    double cpu_time_used;
+    double wall_time_used;
 
     if (argc < 2) {
         printf("Please specify input filename\n");
@@ -171,10 +176,19 @@ int main(int argc, const char **argv) {
     printf("dec = [%s]\n", decFilename);
 
     /* compress */
+    /*
     {   FILE* const inpFp = fopen(inpFilename, "rb");
         FILE* const outFp = fopen(lz4Filename, "wb");
         printf("compress : %s -> %s\n", inpFilename, lz4Filename);
+        
+        start_cpu = clock();
+        clock_gettime(CLOCK_REALTIME, &start_wall);
+        
         LZ4F_errorCode_t ret = compress_file(inpFp, outFp);
+        
+        clock_gettime(CLOCK_REALTIME, &end_wall);
+        end_cpu = clock();
+        
         fclose(inpFp);
         fclose(outFp);
 
@@ -186,11 +200,16 @@ int main(int argc, const char **argv) {
         printf("%s: %zu → %zu bytes, %.1f%%\n",
             inpFilename,
             get_file_size(inpFilename),
-            get_file_size(lz4Filename), /* might overflow is size_t is 32 bits and size_{in,out} > 4 GB */
+            get_file_size(lz4Filename), // might overflow is size_t is 32 bits and size_{in,out} > 4 GB
             (double)get_file_size(lz4Filename) / get_file_size(inpFilename) * 100);
 
+        cpu_time_used = ((double) (end_cpu - start_cpu)) / CLOCKS_PER_SEC;
+        wall_time_used = (end_wall.tv_sec - start_wall.tv_sec) + (end_wall.tv_nsec - start_wall.tv_nsec) * (1e-9);
+        printf("compress time (cpu) : %f\n", cpu_time_used);
+        printf("compress time (wall) : %f\n", wall_time_used);
         printf("compress : done\n");
     }
+    */
 
     /* decompress */
     {
@@ -198,7 +217,14 @@ int main(int argc, const char **argv) {
         FILE* const outFp = fopen(decFilename, "wb");
 
         printf("decompress : %s -> %s\n", lz4Filename, decFilename);
+        
+        start_cpu = clock();
+        clock_gettime(CLOCK_REALTIME, &start_wall);
+        
         LZ4F_errorCode_t ret = decompress_file(inpFp, outFp);
+
+        clock_gettime(CLOCK_REALTIME, &end_wall);
+        end_cpu = clock();
 
         fclose(outFp);
         fclose(inpFp);
@@ -208,10 +234,15 @@ int main(int argc, const char **argv) {
             return 1;
         }
 
+        cpu_time_used = ((double) (end_cpu - start_cpu)) / CLOCKS_PER_SEC;
+        wall_time_used = (end_wall.tv_sec - start_wall.tv_sec) + (end_wall.tv_nsec - start_wall.tv_nsec) * (1e-9);
+        printf("decompress time (cpu) : %f\n", cpu_time_used);
+        printf("decompress time (wall) : %f\n", wall_time_used);
         printf("decompress : done\n");
     }
 
     /* verify */
+    /*
     {   FILE* const inpFp = fopen(inpFilename, "rb");
         FILE* const decFp = fopen(decFilename, "rb");
 
@@ -228,5 +259,6 @@ int main(int argc, const char **argv) {
 
         printf("verify : OK\n");
     }
+    */
 
 }
